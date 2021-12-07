@@ -1,10 +1,15 @@
 import javax.swing.*;
-import java.awt.*;
 
+/**
+ * Egyjátékos mód JFrame-je.
+ */
 public class SinglePlayerFrame extends JFrame {
 
 
-    SinglePlayerPanel singlePlayerPanel;
+    /**
+     * Létrehozza a framet, a megfelelő beállításokat eszközöli és létrehoz egy egyjátékosmód panelt.
+     * @param gl kell a játék állapotának változtatásához.
+     */
     public SinglePlayerFrame(GameLauncher gl) {
 
         this.setTitle("Single Player");
@@ -13,10 +18,7 @@ public class SinglePlayerFrame extends JFrame {
         this.setSize(GameLauncher.WIDTH, GameLauncher.HEIGHT);
         this.setLocationRelativeTo(null);
 
-
-        singlePlayerPanel = new SinglePlayerPanel(this, gl);
-
-        this.add(singlePlayerPanel);
+        this.add(new SinglePlayerPanel(this, gl));
         this.pack();
         this.setVisible(true);
 

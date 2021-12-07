@@ -2,62 +2,55 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
 
+/**
+ * A panel, melyben megjelenik a játék
+ */
 public class TwoPlayerPanel extends JPanel implements ActionListener,Input {
 
     GameLauncher gameLauncher;
     TwoPlayerFrame twoPlayerFrame;
-
-    boolean running;
-    Snake snake1;
-    Snake snake2;
     Timer timer;
-    Fruit fruit;
+    TwoPlayerMode twoPlayerMode;
 
+    /**
+     * Beállítja a megfelelő kinézetet és kér a felhasználózól egy játékosnevet, továbbá inicializálja a gameloopot reprezenzáló timert, mely időnként eventet hív.
+     * @param gl a játék állapotát ezzel az osztállyal lehet változtatni.
+     * @param tw a játék állapotát ezzel az osztállyal lehet változtatni.
+     */
     public TwoPlayerPanel(GameLauncher gl, TwoPlayerFrame tw){
         gameLauncher=gl;
         twoPlayerFrame=tw;
+        twoPlayerMode =new TwoPlayerMode();
         this.setPreferredSize(new Dimension(GameLauncher.WIDTH, GameLauncher.HEIGHT));
         this.setFocusable(true);
         this.addKeyListener(new MyKeyAdapter(this));
-        running=true;
-        snake1 = new Snake(1);
-        snake2 = new Snake(2);
-        fruit = new Fruit();
+
         timer = new Timer(GameLauncher.DELAY,this);
         timer.start();
         }
 
-    public void checkCollision(){
-        int headX=snake1.getBody().getFirst().x;
-        int headY=snake1.getBody().getFirst().y;
-        int head2X=snake2.getBody().getFirst().x;
-        int head2Y=snake2.getBody().getFirst().y;
+    /**
+     * Kirajzolja a panelra a játék elemeit.
+     * @param g az osztály melynek a kirajzoló függvényei hívja meg.
+     */
+    @Override
+    public void paint(Graphics g) {
+        Graphics2D g2d = (Graphics2D) g;
 
-        if(headX<0 || headX>GameLauncher.gameWIDTH || headY<0 || headY> GameLauncher.gameHEIGHT-1){
-            running=false;
-        }
-        for(int i=1; i<snake1.getBody().size(); i++){
-            if(headX==snake1.getBody().get(i).x && headY==snake1.getBody().get(i).y){
-                running=false;
-                break;
-            }
-        }
-        if(headX==fruit.getLocation().x && headY==fruit.getLocation().y){
-            snake1.setIncrement(true);
-            fruit= new Fruit();
-        }
+        twoPlayerMode.drawElements(g2d);
+
+
     }
-
+    /**
+     * A timer által hívott időközönként meghívódik a gameloop, teszteli, hogy még kell-e a játékot működtetni.
+     * @param e vent, mely meghívódik ha változás történik
+     */
     @Override
     public void actionPerformed(ActionEvent e) {
-        if(running) {
+        if(twoPlayerMode.isRunning()) {
             removeAll();
-            snake1.move();
-            snake2.move();
-            checkCollision();
+            twoPlayerMode.gameLogic();
             repaint();
         }
         else{
@@ -66,12 +59,14 @@ public class TwoPlayerPanel extends JPanel implements ActionListener,Input {
         }
     }
 
+    /**
+     * A gomb lenyomását az adott játékmódnak adja be, ha játék végetér beállítja a menti az eredményeket és visszatér a játék a menübe egy gomb nyomás után.
+     * @param input a felhasználó által beadott gomb kódja int-ben.
+     */
     @Override
     public void input(int input){
-        if(running) {
-            snake1.setDirection(input);
-            snake2.setDirection(input);
-            System.out.println(input);
+        if(twoPlayerMode.isRunning()) {
+            twoPlayerMode.input(input);
         }
         else{
             twoPlayerFrame.dispose();

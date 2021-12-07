@@ -2,101 +2,68 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 
+/**
+ * A panel, melyben megjelenik a játék
+ */
 public class SinglePlayerPanel extends JPanel implements ActionListener,Input{
-    boolean running;
-    Snake snake;
-    Timer timer;
-    Fruit fruit;
-    SinglePlayerFrame singlePlayerFrame;
-    GameLauncher gameLauncher;
 
+    private final SinglePlayerFrame singlePlayerFrame;
+    private final GameLauncher gameLauncher;
+    private final SinglePlayerMode singlePlayerMode;
+    Player player;
+    Leaderboard leaderboard;
+
+    /**
+     * Beállítja a megfelelő kinézetet és kér a felhasználózól egy játékosnevet, továbbá inicializálja a gameloopot reprezenzáló timert, mely időnként eventet hív.
+     * @param sf frame, mely megjeleníti a panelt.
+     * @param gl a játék állapotát ezzel az osztállyal lehet változtatni.
+     */
     SinglePlayerPanel(SinglePlayerFrame sf,GameLauncher gl) {
         singlePlayerFrame=sf;
         gameLauncher=gl;
+        leaderboard= new Leaderboard();
         this.setPreferredSize(new Dimension(GameLauncher.WIDTH, GameLauncher.HEIGHT));
         this.setFocusable(true);
         this.addKeyListener(new MyKeyAdapter(this));
-        running= true;
-        snake = new Snake(2);
-        fruit= new Fruit();
-        timer = new Timer(GameLauncher.DELAY,this);
+
+        String nickname = JOptionPane.showInputDialog("Please add a nickname");
+        player = new Player(nickname,0);
+        singlePlayerMode = new SinglePlayerMode();
+        Timer timer = new Timer(GameLauncher.DELAY, this);
         timer.start();
     }
 
+    /**
+     * Kirajzolja a legjobb eredményét az eddig játéknak.
+     * @param g az osztály melynek a kirajzoló függvényei hívja meg.
+     */
+    private void drawBestScore(Graphics g){
+        g.setColor(Color.YELLOW);
+        g.drawString("Best score: "+leaderboard.getLeaderboardlist().get(0).getName()+" "+leaderboard.getLeaderboardlist().get(0).getScore()
+                ,0,25);
+    }
+
+    /**
+     * Kirajzolja a panelra a játék elemeit.
+     * @param g az osztály melynek a kirajzoló függvényei hívja meg.
+     */
     @Override
     public void paint(Graphics g) {
-        Graphics2D g2d = (Graphics2D) g;
-
-        drawMap(g2d);
-        snake.draw(g2d);
-        fruit.draw(g2d);
-        g2d.setFont(new Font("Consolas",Font.BOLD,30));
-        FontMetrics hossz= getFontMetrics(g.getFont());
-        if(running){
-
-            g2d.drawString("Score: "+ snake.getBody().size(),GameLauncher.WIDTH-hossz.stringWidth("Score: "+snake.getBody().size()),g2d.getFont().getSize());
-        }
-        else{
-            g2d.drawString("You collieded the score was: "+ snake.getBody().size(),GameLauncher.WIDTH-hossz.stringWidth("You collieded the score was: "+snake.getBody().size()),g2d.getFont().getSize());
-            g2d.setColor(Color.red);
-            g2d.drawString("Press any key to get back to menu", (GameLauncher.WIDTH-hossz.stringWidth("Press any key to get back to menu"))/2,GameLauncher.HEIGHT/2);
-        }
-    }
-    public void drawMap(Graphics2D g2d){
-        for (int i = 0; i < GameLauncher.WIDTH; i++) {
-            for (int j = 0; j < GameLauncher.HEIGHT; j++) {
-                if (i % 2 == j % 2) {
-                    g2d.setColor(Color.decode("#59981A"));
-                } else {
-                    g2d.setColor(Color.decode("#81B622"));
-                }
-                g2d.fillRect(i * GameLauncher.UNIT_SIZE, j * GameLauncher.UNIT_SIZE, GameLauncher.UNIT_SIZE, GameLauncher.UNIT_SIZE);
-            }
-        }
-    }
-    public void checkCollision(){
-
-        int headX=snake.getBody().getFirst().x;
-        int headY=snake.getBody().getFirst().y;
-        if(headX<0 || headX>GameLauncher.gameWIDTH || headY<0 || headY> GameLauncher.gameHEIGHT-1){
-            running=false;
-        }
-        for(int i=1; i<snake.getBody().size(); i++){
-
-            if(headX==snake.getBody().get(i).x && headY==snake.getBody().get(i).y){
-                running=false;
-                break;
-            }
-        }
+        singlePlayerMode.drawElements(g);
+        drawBestScore(g);
 
     }
 
-    public void checkCollisionWithFood() {
-        if (snake.getBody().getFirst().x == fruit.getLocation().x && snake.getBody().getFirst().y == fruit.getLocation().y) {
-            snake.setIncrement(true);
-            fruit = new Fruit();
-            /*
-            boolean generate=true;
-
-            while(generate){
-                for(int i=0; i<snake.getBody().size(); i++){
-                    if(fruit.getLocation()!=snake.getBody().get(i)){
-                        generate=false;
-                    }
-                }
-                fruit= new Fruit();
-             }*/
-
-        }
-    }
-
+    /**
+     * A timer által hívott időközönként meghívódik a gameloop, teszteli, hogy még kell-e a játékot működtetni.
+     * @param e vent, mely meghívódik ha változás történik
+     */
     @Override
     public void actionPerformed(ActionEvent e) {
-        if(running) {
+
+        if(singlePlayerMode.isRunning()) {
             removeAll();
-            snake.move();
-            checkCollision();
-            checkCollisionWithFood();
+            singlePlayerMode.gameLogic();
             repaint();
         }
         else{
@@ -105,13 +72,20 @@ public class SinglePlayerPanel extends JPanel implements ActionListener,Input{
         }
     }
 
+    /**
+     * A gomb lenyomását az adott játékmódnak adja be, ha játék végetér beállítja a menti az eredményeket és visszatér a játék a menübe egy gomb nyomás után.
+     * @param input a felhasználó által beadott gomb kódja int-ben.
+     */
     @Override
     public void input(int input){
-        if(running) {
-            snake.setDirection(input);
-            System.out.println(input);
+        if(singlePlayerMode.isRunning()) {
+            singlePlayerMode.input(input);
+
         }
         else{
+            player.setScore(singlePlayerMode.getScore());
+            leaderboard.updateLeaderboard(player);
+            leaderboard.writeOutLeaderboard();
             singlePlayerFrame.dispose();
             gameLauncher.switchstate(GameLauncher.STATES.menu);
         }

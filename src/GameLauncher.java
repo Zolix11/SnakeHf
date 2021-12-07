@@ -1,3 +1,6 @@
+/**
+ * A fő osztály melyben irányítja, hogy mely része jelenik meg a játéknak.
+ */
 public class GameLauncher {
 
 
@@ -6,8 +9,11 @@ public class GameLauncher {
     public static final int gameHEIGHT=20;
     public static final int WIDTH = gameWIDTH*UNIT_SIZE;
     public static final int HEIGHT = gameHEIGHT*UNIT_SIZE;
-    public static final int DELAY = 150;
+    public static final int DELAY = 200;
 
+    /**
+     * A játék lehetséges állapotai
+     */
     public enum STATES{
         menu,
         singleplayer,
@@ -16,11 +22,18 @@ public class GameLauncher {
     }
 
 
+    /**
+     * A konstruktorban meghívja a MenuFrame osztályt.
+     */
     public GameLauncher(){
         new MenuFrame(this);
     }
 
 
+    /**
+     * Változtatja a játék állapotát
+     * @param state egy adott osztályállapota a paraméter
+     */
     public void switchstate(STATES state){
         switch (state){
             case menu:
@@ -33,6 +46,7 @@ public class GameLauncher {
                 new TwoPlayerFrame(this);
                 break;
             case leaderboard:
+                new LeaderBoardFrame(this);
                 break;
         }
     }

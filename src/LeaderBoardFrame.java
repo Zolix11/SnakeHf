@@ -1,26 +1,25 @@
 import javax.swing.*;
 
 /**
- * A kétjátékos mód frameje.
+ * A leaderboardot megjelenító osztály.
  */
-public class TwoPlayerFrame extends JFrame {
-
+public class LeaderBoardFrame extends JFrame{
 
     /**
-     * Létrehozza a framet, a megfelelő beállításokat eszközöli és létrehoz egy kétjátékos panelt.
+     * A konstruktorban beállítódnak a megfelelő frame beállítások, és létrejön a panelmelyben meglesznek jelenítve az eredmények.
      * @param gl kell a játék állapotának változtatásához.
      */
-    public TwoPlayerFrame(GameLauncher gl) {
+    public LeaderBoardFrame(GameLauncher gl){
 
-        this.setTitle("Two Player");
+        this.setTitle("Leaderboard");
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setResizable(false);
         this.setSize(GameLauncher.WIDTH, GameLauncher.HEIGHT);
         this.setLocationRelativeTo(null);
-
-        this.add(new TwoPlayerPanel(gl, this));
+        this.add(new LeaderBoardPanel(this,gl));
         this.pack();
         this.setVisible(true);
-
     }
+
+
 }

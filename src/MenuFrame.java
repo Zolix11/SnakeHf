@@ -5,18 +5,17 @@ import java.awt.event.ActionListener;
 
 public class MenuFrame extends JFrame {
 
-    MenuFramePanel menuFramePanel;
-    MenuFrame(GameLauncher gl){
-        //Frame Settings
+    /**
+     * Létrehozza azt a framet mely megjeleníti a MenuPanelt.
+     * @param gl  játék állapotát ezzel az osztállyal lehet változtatni.
+     */
+    public MenuFrame(GameLauncher gl){
         this.setTitle("Snake game");
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setResizable(false);
         this.setSize(GameLauncher.WIDTH, GameLauncher.HEIGHT);
-        this.setBackground(new Color(35, 176, 73));
         this.setLocationRelativeTo(null);
-        menuFramePanel = new MenuFramePanel(this,gl);
-
-        this.add(menuFramePanel);
+        this.add( new MenuFramePanel(this,gl));
         this.pack();
         this.setVisible(true);
     }
